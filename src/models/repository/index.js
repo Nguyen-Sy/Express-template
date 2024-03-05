@@ -1,86 +1,95 @@
-const {
-    getSelectData,
-    getUnSelectData,
-    castStringToObjectIdMongoose,
-} = require("../../utils");
+const { Types } = require("mongoose");
 
 class Repository {
     constructor(model) {
         this.model = model;
+        this.defaultOption = {
+            select: [],
+            unselect: ["_v", "isDeleted"],
+            sort: "ctime",
+        };
+        this.defaultPaginateOption = {
+            page: 1,
+            limit: 20,
+        };
     }
+
+    #createFilter = ({ select, unselect }) => {
+        return select.length != 0
+            ? Object.fromEntries(select.map((el) => [el, 1]))
+            : unselect.length != 0
+            ? Object.fromEntries(unselect.map((el) => [el, 0]))
+            : [];
+    };
 
     create = async (object) => {
         return await this.model.create(object);
     };
 
-    createSelection = ({ select, unselect }) => {
-        return select.length != 0
-            ? getSelectData(select)
-            : unselect.length != 0
-            ? getUnSelectData(unselect)
-            : [];
+    insertMany = async (objects) => {
+        return await this.model.insertMany(objects, {
+            upsert: true,
+            new: true,
+        });
     };
 
-    findById = async (id) => {
-        const res = await this.model
-            .findById(castStringToObjectIdMongoose(id))
-            .select(selection)
-            .lean();
-        return res;
-    };
+    findById = async (id) => await this.model.findById(new Types.ObjectId(id));
 
-    findMany = async ({
-        filter,
-        select = [],
-        unselect = ["_v", "isDeleted"],
-        sort = "ctime",
-        page = 1,
-        limit = 20,
-    }) => {
-        const selection = this.createSelection({ select, unselect });
-        const skip = (page - 1) * limit;
-        const sortBy = sort ? { sort: -1 } : { id: -1 };
-        const res = await this.model
+    find = async (filter, options = { ...this.defaultOption }) => {
+        return await this.model
             .find({
                 ...filter,
                 isDeleted: {
                     $ne: true,
                 },
             })
-            .sort(sortBy)
-            .skip(skip)
-            .limit(limit)
-            .select(selection)
+            .select(this.#createFilter(options))
+            .sort(options.sort)
             .lean();
-        return res;
     };
 
-    findOne = async ({ filter, select = [], unselect = [] }) => {
-        const selection = this.createSelection({ select, unselect });
-        const res = await this.model
+    page = async (
+        filter,
+        options = { ...this.defaultOption, ...this.defaultPaginateOption }
+    ) => {
+        return await this.model
+            .find({
+                ...filter,
+                isDeleted: {
+                    $ne: true,
+                },
+            })
+            .select(this.#createFilter(options))
+            .skip((options.page - 1) * options.limit)
+            .size(options.limit)
+            .sort(options.sort)
+            .lean();
+    };
+
+    findOne = async (filter, options = { ...this.defaultOption }) => {
+        return await this.model
             .findOne({
                 ...filter,
-                isDeleted: false,
+                isDeleted: {
+                    $ne: true,
+                },
             })
-            .select(selection)
+            .select(this.#createFilter(options))
             .lean();
-        return res;
     };
 
-    findOneAndDelete = async (query) => {
-        return await this.findOneAndUpdate({
-            query,
-            object: { isDeleted: true },
-        });
-    };
-
-    findOneAndUpdate = async ({ query, object }) => {
-        const options = {
+    findOneAndUpdate = async (filter, object) => {
+        const res = await this.model.findOneAndUpdate(filter, object, {
             upsert: true,
             new: true,
-        };
-        const res = await this.model.findOneAndUpdate(query, object, options);
+        });
         return res;
+    };
+
+    findOneAndDelete = async (filter) => {
+        return await this.model.findOneAndUpdate(filter, {
+            isDeleted: true,
+        });
     };
 }
 

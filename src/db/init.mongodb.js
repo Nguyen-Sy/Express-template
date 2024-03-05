@@ -1,28 +1,26 @@
 "use strict";
 const mongoose = require("mongoose");
-
-const { DB_HOST, DB_PORT, DB_NAME } = require("../config");
-const { countConnect } = require("../helper/checkConnect");
-
-const connectionString = `mongodb://${DB_HOST}:${DB_PORT}/${DB_NAME}`;
+const { DB_URL } = require("../config");
+const { BadRequestError } = require("../core/error.response");
 
 class Database {
     constructor() {
         this.connect();
     }
 
-    connect(type = "mongodb") {
+    connect() {
         if (1 === 1) {
             mongoose.set("debug", true);
             mongoose.set("debug", { color: true });
         }
         mongoose
-            .connect(connectionString)
+            .connect(DB_URL)
             .then((_) => {
                 console.log("Connected to Mongo");
-                countConnect();
             })
-            .catch((err) => console.log(err));
+            .catch((err) => {
+                throw new BadRequestError(err);
+            });
     }
 
     static getInstance() {

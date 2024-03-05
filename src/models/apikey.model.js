@@ -27,5 +27,4 @@ var apiKeySchema = new Schema(
         collection: COLLECTION_NAME,
     }
 );
-
 module.exports = model(DOCUMENT_NAME, apiKeySchema);

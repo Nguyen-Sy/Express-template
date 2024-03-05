@@ -10,9 +10,7 @@ class ApiKeyService {
     };
 
     static findApikeyByKey = async (key) => {
-        return await apiKeyRepository.findOne({
-            filter: { key: key, status: true },
-        });
+        return await apiKeyRepository.findOne({ key: key, status: true });
     };
 }
 

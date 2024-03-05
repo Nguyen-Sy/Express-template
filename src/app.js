@@ -4,9 +4,9 @@ const morgan = require("morgan");
 const { default: helmet } = require("helmet");
 const compression = require("compression");
 const app = express();
+const config = require("./config");
 
 //init middleware
-app.use(morgan("dev"));
 app.use(helmet());
 app.use(compression());
 app.use(express.json());
@@ -15,22 +15,16 @@ app.use(
         extended: true,
     })
 );
+// Show routes called in console during development
+if (config.NODE_ENV !== "production") {
+    app.use(morgan("dev"));
+}
 
+// database connection
 require("./db/init.mongodb");
+require("./db/init.redis");
 
+// init route
 app.use("/", require("./routers"));
-app.use((req, res, next) => {
-    const error = new Error("Not found");
-    error.status = 404;
-    next(error);
-});
-app.use((error, req, res, next) => {
-    const statusCode = error.status || 500;
-    return res.status(statusCode).json({
-        status: "error",
-        code: statusCode,
-        message: error.message || "Interal Server error",
-    });
-});
 
 module.exports = app;
