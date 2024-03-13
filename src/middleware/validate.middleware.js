@@ -8,7 +8,7 @@ const validate = (schema = defaultSchemas) => {
                 const { error } = schema[field].validate(req[field], {
                     abortEarly: false,
                 });
-                throw new BadRequestError(error);
+                if (error) throw new BadRequestError(error);
             }
         });
 
@@ -16,4 +16,4 @@ const validate = (schema = defaultSchemas) => {
     };
 };
 
-export default validate;
+module.exports = validate;

@@ -2,6 +2,7 @@
 const mongoose = require("mongoose");
 const { DB_URL } = require("../config");
 const { BadRequestError } = require("../core/error.response");
+const { logger } = require("../plugin");
 
 class Database {
     constructor() {
@@ -9,18 +10,20 @@ class Database {
     }
 
     connect() {
-        if (1 === 1) {
-            mongoose.set("debug", true);
-            mongoose.set("debug", { color: true });
+        if (DB_URL) {
+            if (1 === 1) {
+                mongoose.set("debug", true);
+                mongoose.set("debug", { color: true });
+            }
+            mongoose
+                .connect(DB_URL)
+                .then((_) => {
+                    logger.info("Connection to mongodb created");
+                })
+                .catch((err) => {
+                    throw new BadRequestError(err);
+                });
         }
-        mongoose
-            .connect(DB_URL)
-            .then((_) => {
-                console.log("Connected to Mongo");
-            })
-            .catch((err) => {
-                throw new BadRequestError(err);
-            });
     }
 
     static getInstance() {

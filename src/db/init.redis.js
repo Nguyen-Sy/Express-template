@@ -2,25 +2,49 @@
 const redis = require("redis");
 const { REDIS_URL } = require("../config");
 const { BadRequestError } = require("../core/error.response");
+const { logger } = require("../plugin");
 
 class Database {
+    #connectionTimeOut;
+
     constructor() {
-        Database.connect();
+        this.connect();
+        this.#connectionTimeOut = null;
     }
 
-    static async connect() {
-        const redisClient = redis.createClient({
-            url: REDIS_URL,
-        });
-        await redisClient
-            .connect()
-            .then(() => {
-                console.log("Redis connected");
-            })
-            .catch((err) => {
-                throw new BadRequestError(err);
+    connect() {
+        if (REDIS_URL) {
+            const redisClient = redis.createClient({
+                url: REDIS_URL,
             });
-        return redisClient;
+            redisClient.connect();
+            this.#handleEventConnection(redisClient);
+        }
+    }
+
+    #handleEventConnection(redisClient) {
+        redisClient.on("connect", () => {
+            logger.info("Connection to redis created");
+            clearTimeout(this.#connectionTimeOut);
+        });
+        redisClient.on("end", (event) => {
+            logger.info("Connection to redis ended");
+            this.#handleErrorConnection(event);
+        });
+        redisClient.on("reconnecting", () => {
+            logger.info("Connection to redis reconnecting");
+            clearTimeout(this.#connectionTimeOut);
+        });
+        redisClient.on("error", (event) => {
+            logger.info("Connection to redis error");
+            this.#handleErrorConnection(event);
+        });
+    }
+
+    #handleErrorConnection(error) {
+        this.#connectionTimeOut = setTimeout(() => {
+            throw new BadRequestError(error, -99);
+        }, 10000);
     }
 
     static getInstance() {
