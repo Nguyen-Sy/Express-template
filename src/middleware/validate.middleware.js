@@ -1,19 +1,20 @@
-const { BadRequestError } = require("../core/error.response");
+const { BadRequestError } = require("../core/error.response")
 
-const defaultSchemas = { body: null, query: null, params: null };
+const defaultSchemas = { body: null, query: null, params: null }
 const validate = (schema = defaultSchemas) => {
 	return (req, res, next) => {
-		["body", "query", "params"].forEach((field) => {
+		const validateFields = ["body", "query", "params"]
+		validateFields.forEach((field) => {
 			if (schema[field]) {
 				const { error } = schema[field].validate(req[field], {
 					abortEarly: false,
-				});
-				if (error) throw new BadRequestError(error);
+				})
+				if (error) throw new BadRequestError(error)
 			}
-		});
+		})
 
-		next();
-	};
-};
+		next()
+	}
+}
 
-module.exports = validate;
+module.exports = validate

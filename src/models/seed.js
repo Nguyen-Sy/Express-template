@@ -1,18 +1,20 @@
-require("../db/init.mongodb");
-const { apiKeyModel } = require("./index");
-const { ApiKeyService } = require("../services/index");
+require("dotenv").config()
+require("../db/init.mongodb")
+const { apiKeyModel } = require("./index")
+const { ApiKeyService } = require("../services/index")
+const { logger } = require("../plugin")
 
 const seedApiKey = async () => {
-	await apiKeyModel.collection.drop();
-	await ApiKeyService.createApikey();
-};
+	await apiKeyModel.collection.drop()
+	await ApiKeyService.createApikey()
+}
 
 const seed = async () => {
-	await seedApiKey();
-	return null;
-};
+	await seedApiKey()
+	return null
+}
 
 seed().then(() => {
-	console.log("Seeding success");
-	process.exit(0);
-});
+	logger.debug("Seeding success")
+	process.exit(0)
+})

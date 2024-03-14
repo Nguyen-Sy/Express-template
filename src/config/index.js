@@ -3,11 +3,12 @@ const AppConfig = {
 	APP_PORT: process.env.APP_PORT || "5000",
 
 	DB_URL: process.env.DB_URL || "mongodb://localhost:27017",
-	DB_NAME: process.env.DB_NAME || "TLCN",
+	DB_NAME: process.env.DB_NAME || "temp",
 	REDIS_URL: process.env.REDIS_URL,
 
 	WRITE_LOG_FILE:
-    Boolean(process.env.WRITE_LOG_FILE == "true") || this.NODE_ENV == "PROD",
-};
+		Boolean(process.env.WRITE_LOG_FILE == "true") ||
+		this.NODE_ENV == "PROD",
+}
 
-module.exports = AppConfig;
+module.exports = AppConfig
