@@ -5,34 +5,35 @@ const { BadRequestError } = require("../core/error.response");
 const { logger } = require("../plugin");
 
 class Database {
-    constructor() {
-        this.connect();
-    }
+	constructor() {
+		this.connect();
+	}
 
-    connect() {
-        if (DB_URL) {
-            if (1 === 1) {
-                mongoose.set("debug", true);
-                mongoose.set("debug", { color: true });
-            }
-            mongoose
-                .connect(DB_URL)
-                .then((_) => {
-                    logger.info("Connection to mongodb created");
-                })
-                .catch((err) => {
-                    throw new BadRequestError(err);
-                });
-        }
-    }
+	connect() {
+		if (DB_URL) {
+			// eslint-disable-next-line no-constant-condition
+			if (1 === 1) {
+				mongoose.set("debug", true);
+				mongoose.set("debug", { color: true });
+			}
+			mongoose
+				.connect(DB_URL)
+				.then(() => {
+					logger.info("Connection to mongodb created");
+				})
+				.catch((err) => {
+					throw new BadRequestError(err);
+				});
+		}
+	}
 
-    static getInstance() {
-        if (!Database.instance) {
-            Database.instance = new Database();
-        }
+	static getInstance() {
+		if (!Database.instance) {
+			Database.instance = new Database();
+		}
 
-        return Database.instance;
-    }
+		return Database.instance;
+	}
 }
 
 const instanceMongoDb = Database.getInstance();

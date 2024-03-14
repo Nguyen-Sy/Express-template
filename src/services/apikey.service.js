@@ -1,17 +1,13 @@
-const crypto = require("node:crypto");
-const { apiKeyRepository } = require("../models/index");
+const { apiKeyRepository } = require("../repository");
 
 class ApiKeyService {
-    static createApikey = async () => {
-        return await apiKeyRepository.create({
-            key: crypto.randomBytes(64).toString("hex"),
-            permissions: "0000",
-        });
-    };
+	static createApikey = async () => {
+		return await apiKeyRepository.createApiKey("0000");
+	};
 
-    static findApikeyByKey = async (key) => {
-        return await apiKeyRepository.findOne({ key: key, status: true });
-    };
+	static findApikeyByKey = async (key) => {
+		return await apiKeyRepository.findByKey(key);
+	};
 }
 
 module.exports = ApiKeyService;

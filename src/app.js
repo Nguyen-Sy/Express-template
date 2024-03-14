@@ -11,13 +11,13 @@ app.use(helmet());
 app.use(compression());
 app.use(express.json());
 app.use(
-    express.urlencoded({
-        extended: true,
-    })
+	express.urlencoded({
+		extended: true,
+	})
 );
 // Show routes called in console during development
 if (config.NODE_ENV !== "production") {
-    app.use(morgan("dev"));
+	app.use(morgan("dev"));
 }
 
 // database connection
