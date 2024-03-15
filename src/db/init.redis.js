@@ -8,8 +8,8 @@ class Database {
 	#connectionTimeOut
 
 	constructor() {
-		this.connect()
 		this.#connectionTimeOut = null
+		return this.connect()
 	}
 
 	connect() {
@@ -19,6 +19,7 @@ class Database {
 			})
 			redisClient.connect()
 			this.#handleEventConnection(redisClient)
+			return redisClient
 		}
 	}
 
@@ -51,7 +52,6 @@ class Database {
 		if (!Database.instance) {
 			Database.instance = new Database()
 		}
-
 		return Database.instance
 	}
 }

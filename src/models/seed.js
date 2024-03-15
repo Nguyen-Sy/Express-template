@@ -1,5 +1,6 @@
 require("dotenv").config()
 require("../db/init.mongodb")
+const redisClient = require("../db/init.redis")
 const { apiKeyModel } = require("./index")
 const { ApiKeyService } = require("../services/index")
 const { logger } = require("../plugin")
@@ -10,6 +11,7 @@ const seedApiKey = async () => {
 }
 
 const seed = async () => {
+	await redisClient.flushAll()
 	await seedApiKey()
 	return null
 }
