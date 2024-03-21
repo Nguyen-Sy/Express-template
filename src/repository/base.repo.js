@@ -1,5 +1,5 @@
-const { Types } = require("mongoose")
 const redisClient = require("../db/init.redis")
+const { Types } = require("mongoose")
 class Cache {
 	constructor(redis, name) {
 		this.redis = redis
@@ -107,11 +107,9 @@ class Repository extends Cache {
 	}
 
 	#createFilter = ({ select, unselect }) => {
-		return select.length != 0
-			? Object.fromEntries(select.map((el) => [el, 1]))
-			: unselect.length != 0
-				? Object.fromEntries(unselect.map((el) => [el, 0]))
-				: []
+		if (select) return Object.fromEntries(select.map((el) => [el, 1]))
+		if (unselect) return Object.fromEntries(unselect.map((el) => [el, 0]))
+		return []
 	}
 
 	create = async (object) => {
@@ -178,10 +176,14 @@ class Repository extends Cache {
 		})
 	}
 
-	findOneAndDelete = async (filter) => {
+	findOneAndSoftDelete = async (filter) => {
 		return await this.model.findOneAndUpdate(filter, {
 			isDeleted: true,
 		})
+	}
+
+	findOneAndDelete = async (filter) => {
+		return await this.model.findOneAndDelete(filter)
 	}
 
 	page = async (
